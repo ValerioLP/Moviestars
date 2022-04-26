@@ -48,6 +48,18 @@ public class FilmDAO_PreparedStatement {
 		return row_inserted;
 	}
 	
+	public boolean insertFilmAll(List<Film> films) {
+		boolean rows_inserted = true;
+		for (Film f : films) {
+			rows_inserted = insertFilm(f);
+
+			if (rows_inserted == false)
+				return false;
+		}
+
+		return rows_inserted;
+	}
+	
 	public List<Film> getAllFilms() {
 		Statement st = null;
 		ResultSet rs = null;
@@ -71,6 +83,51 @@ public class FilmDAO_PreparedStatement {
 		}
 
 		return films;
+	}
+
+	public Film getFilmByID(int codFilm) {
+		PreparedStatement psFilmByID = null;
+		ResultSet rs = null;
+		Film film = null;
+
+		try {
+			String getFilmByID = "select * from film where codice = ?";
+			psFilmByID = ConnectionFactory.getConnection().prepareStatement(getFilmByID);
+			psFilmByID.setInt(1, codFilm);
+			rs = psFilmByID.executeQuery();
+
+			if (rs.next()) {
+				film = new Film(rs.getInt("codice"), rs.getString("titolo"),rs.getDate("anno_produzione"), 
+						rs.getString("nazionalita"), Genere.valueOf(rs.getString("genere")));
+			}
+
+		} catch (SQLException e) {
+			System.out.println("Connection error");
+			e.printStackTrace();
+		} finally {
+			ConnectionFactory.closeConnection();
+		}
+
+		return film;
+	}
+	
+	public boolean deleteAllFilms() {
+		PreparedStatement psDeleteFilms = null;
+		int row_affected = 0;
+		boolean row_deleted = true;
+
+		try {
+			String DeleteFilms = "DELETE FROM film";
+			psDeleteFilms = ConnectionFactory.getConnection().prepareStatement(DeleteFilms);
+			row_affected = psDeleteFilms.executeUpdate();
+		} catch (SQLException e1) {
+			System.out.println("Eccezione durante cancellazione film");
+			e1.printStackTrace();
+			row_deleted = false;
+		} finally {
+			ConnectionFactory.closeConnection();
+		}
+		return row_deleted; 
 	}
 
 }

@@ -45,6 +45,19 @@ public class SaleDAO_PreparedStatement {
 		
 		return row_inserted;
 	}
+	
+	public boolean insertSalaAll(List<Sale> sale) {
+		boolean rows_inserted = true;
+
+		for (Sale s : sale) {
+			rows_inserted = insertSala(s);
+
+			if (rows_inserted == false)
+				return false;
+		}
+
+		return rows_inserted;
+	}
 
 	/*
 	 * Metodo per la ricerca delle sale a partire dalla citta
@@ -102,6 +115,52 @@ public class SaleDAO_PreparedStatement {
 		}
 
 		return sale;
+	}
+
+	public Sale getSalaByID(int codiceSala) {
+		PreparedStatement psSalaByID = null;
+		ResultSet rs = null;
+		Sale sala = null;
+
+		try {
+			String getSalaByID = "select * from sale where codice = ?";
+			psSalaByID = ConnectionFactory.getConnection().prepareStatement(getSalaByID);
+			psSalaByID.setInt(1, codiceSala);
+			rs = psSalaByID.executeQuery();
+
+			if (rs.next()) {
+				sala = new Sale(rs.getInt("codice"), rs.getInt("numero_posti"),rs.getString("nome"), 
+						rs.getString("citta"));
+
+			}
+
+		} catch (SQLException e) {
+			System.out.println("Connection error");
+			e.printStackTrace();
+		} finally {
+			ConnectionFactory.closeConnection();
+		}
+
+		return sala;
+	}
+	
+	public boolean deleteAllSale() {
+		PreparedStatement psDeleteSale = null;
+		int row_affected = 0;
+		boolean row_deleted = true;
+
+		try {
+			String DeleteSale = "DELETE FROM proiezioni";
+			psDeleteSale = ConnectionFactory.getConnection().prepareStatement(DeleteSale);
+			row_affected = psDeleteSale.executeUpdate();
+		} catch (SQLException e1) {
+			System.out.println("Eccezione durante cancellazione sale");
+			e1.printStackTrace();
+			row_deleted = false;
+		} finally {
+			ConnectionFactory.closeConnection();
+		}
+		return row_deleted; 
 	}
 	
 }
